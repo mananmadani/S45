@@ -1,4 +1,6 @@
 /* S45 Jeans Co. site scripts */
+(function () {
+'use strict';
 
 // Mobile menu
 var burger = document.getElementById('burger');
@@ -35,7 +37,7 @@ var form = document.getElementById('enquiryForm');
 
 if (form) {
   var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgJP4GnT2-azA5AIu8WZsasBBF7FmlqeANmnLUOIPYuMLVzFsQ3u0tDZifi0uNyPFR/exec';
-  var status = document.getElementById('st');
+  var statusBox = document.getElementById('st');
   var button = form.querySelector('button');
 
   var val = function (id) {
@@ -56,21 +58,24 @@ if (form) {
 
     button.disabled = true;
     button.textContent = 'Sending…';
-    status.style.display = 'block';
-    status.textContent = 'Submitting your enquiry…';
+    statusBox.style.display = 'block';
+    statusBox.textContent = 'Submitting your enquiry…';
 
     try {
-      var res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+      var controller = new AbortController();
+      var timer = setTimeout(function () { controller.abort(); }, 25000);
+      var res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), signal: controller.signal });
+      clearTimeout(timer);
       var json = await res.json();
       if (json.result !== 'success') throw new Error('Script error');
 
-      status.style.color = '#1a8f4c';
-      status.textContent = '✓ Sent. We will respond within one business day.';
+      statusBox.style.color = '#1a8f4c';
+      statusBox.textContent = '✓ Sent. We will respond within one business day.';
       button.textContent = 'Enquiry sent ✓';
       form.reset();
     } catch (err) {
-      status.style.color = '#b33';
-      status.textContent = 'Something went wrong. Please try again or message us on WhatsApp.';
+      statusBox.style.color = '#b33';
+      statusBox.textContent = 'Something went wrong. Please try again or message us on WhatsApp.';
       button.textContent = 'Try again';
     }
 
@@ -80,3 +85,4 @@ if (form) {
     }, 4000);
   });
 }
+})();
